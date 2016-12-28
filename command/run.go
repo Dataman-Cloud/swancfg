@@ -1,17 +1,23 @@
 package command
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/Dataman-Cloud/swancfg/types"
 	"github.com/urfave/cli"
 	"gopkg.in/yaml.v2"
+)
+
+var (
+	clusterAddr string
 )
 
 func NewRunCommand() cli.Command {
@@ -61,7 +67,7 @@ func runApplication(c *cli.Context) error {
 		return err
 	}
 
-	fmt.Printf("===> sending request to %s...\n", "127.0.0.1:9999")
+	fmt.Printf("===> sending request to cluster:%s...\n", spec.Cluster)
 	if err := sendRequest(spec); err != nil {
 		return err
 	}
@@ -92,11 +98,16 @@ func runApplication(c *cli.Context) error {
 }
 
 func checkQuota(spec *types.Spec) error {
-	//clusterAddr, err := matchClusterAddr(quota.Cluster)
-	clusterAddr := "127.0.0.1:9999"
-	//if err != nil {
-	//	return fmt.Errorf("Cluster not found: %s", quota.Cluster)
-	//}
+	addr, err := getClusterAddr(spec.Cluster)
+	if err != nil {
+		return fmt.Errorf("Cluster can't be found. %s", err.Error())
+	}
+
+	if addr == "" {
+		return fmt.Errorf("Cluster address can't be found. %s", spec.Cluster)
+	}
+
+	clusterAddr = addr
 
 	resp, err := http.Get(fmt.Sprintf("http://%s/v_beta/apps?fields=runAs==%s", clusterAddr, spec.RunAs))
 	if err != nil {
@@ -178,7 +189,7 @@ func sendRequest(spec *types.Spec) error {
 
 	client := &http.Client{}
 
-	req, err := http.NewRequest("POST", "http://127.0.0.1:9999/v_beta/apps", bytes.NewReader(payload))
+	req, err := http.NewRequest("POST", fmt.Sprintf("http://%s/v_beta/apps", clusterAddr), bytes.NewReader(payload))
 	if err != nil {
 		return fmt.Errorf("Make new request failed: %s", err.Error())
 	}
@@ -209,4 +220,25 @@ func getStatus(appId string) (string, error) {
 	}
 
 	return app.State, nil
+}
+
+func getClusterAddr(name string) (string, error) {
+	f, err := os.Open("cluster.cfg")
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		line := strings.Split(scanner.Text(), "\t\t")
+		if line[0] == name {
+			return line[1], nil
+		}
+	}
+	if err := scanner.Err(); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+	}
+
+	return "", nil
 }
