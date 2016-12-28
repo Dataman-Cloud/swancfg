@@ -1,6 +1,6 @@
-user1:
-  cluster1:
-    cpu: 1
+xcm: # user name
+  Unnamed: # cluster name
+    cpu: 0.8 
     memory: 1024
   cluster2:
     cpu: 1
@@ -9,22 +9,3 @@ user2:
   cluster1:
     cpu: 1
     memory: 1024
-  cluster2:
-    cpu: 1
-    memory: 1024
-
-# cluster1:
-#   user1:
-#     cpu: 1
-#     memory: 1024
-#   user2:
-#     cpu: 1
-#     memory: 1024
-# cluster2:
-#   user1:
-#     cpu: 1
-#     memory: 1024
-#   user2:
-#     cpu: 1
-#     memory: 1024
-#
