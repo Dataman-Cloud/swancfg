@@ -109,7 +109,7 @@ func checkQuota(spec *types.Spec) error {
 
 	clusterAddr = addr
 
-	resp, err := http.Get(fmt.Sprintf("http://%s/v_beta/apps?fields=runAs==%s", clusterAddr, spec.RunAs))
+	resp, err := http.Get(fmt.Sprintf("%s/apps?fields=runAs==%s", clusterAddr, spec.RunAs))
 	if err != nil {
 		return fmt.Errorf("Get apps failed: %s", err.Error())
 	}
@@ -123,7 +123,7 @@ func checkQuota(spec *types.Spec) error {
 	fmt.Printf("===> calculating total used resources...\n")
 	var usedCpu, usedMem float64
 	for _, app := range apps {
-		resp, _ := http.Get(fmt.Sprintf("http://%s/v_beta/apps/%s", clusterAddr, app.ID))
+		resp, _ := http.Get(fmt.Sprintf("%s/apps/%s", clusterAddr, app.ID))
 		defer resp.Body.Close()
 		var app *types.App
 		if err := json.NewDecoder(resp.Body).Decode(&app); err != nil {
@@ -189,7 +189,7 @@ func sendRequest(spec *types.Spec) error {
 
 	client := &http.Client{}
 
-	req, err := http.NewRequest("POST", fmt.Sprintf("http://%s/v_beta/apps", clusterAddr), bytes.NewReader(payload))
+	req, err := http.NewRequest("POST", fmt.Sprintf("%s/apps", clusterAddr), bytes.NewReader(payload))
 	if err != nil {
 		return fmt.Errorf("Make new request failed: %s", err.Error())
 	}
@@ -212,7 +212,7 @@ func sendRequest(spec *types.Spec) error {
 }
 
 func getStatus(appId string) (string, error) {
-	resp, _ := http.Get(fmt.Sprintf("http://%s/v_beta/apps/%s", "127.0.0.1:9999", appId))
+	resp, _ := http.Get(fmt.Sprintf("%s/apps/%s", "127.0.0.1:9999", appId))
 	defer resp.Body.Close()
 	var app *types.App
 	if err := json.NewDecoder(resp.Body).Decode(&app); err != nil {
