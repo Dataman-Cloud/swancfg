@@ -17,6 +17,7 @@ func main() {
 		command.NewAddCommand(),
 		command.NewRunCommand(),
 		command.NewListCommand(),
+		command.NewDeleteCommand(),
 	}
 
 	if err := app.Run(os.Args); err != nil {
