@@ -2,8 +2,13 @@ package command
 
 import (
 	"bufio"
+	"fmt"
+	"io/ioutil"
 	"os"
 	"strings"
+
+	"github.com/Dataman-Cloud/swancfg/types"
+	"gopkg.in/yaml.v2"
 )
 
 func getClusters() ([]string, error) {
@@ -46,4 +51,20 @@ func getCluster(cluster string) (string, error) {
 	}
 
 	return "", nil
+}
+
+type Quota map[string]map[string]*types.Quota
+
+func getQuotas() (Quota, error) {
+	file, err := ioutil.ReadFile("./quota.yml")
+	if err != nil {
+		return nil, fmt.Errorf("Read quota file failed: %s", err.Error())
+	}
+	entries := make(map[string]map[string]*types.Quota)
+
+	if err := yaml.Unmarshal(file, entries); err != nil {
+		return nil, fmt.Errorf("Unmarshal failed: %s", err.Error())
+	}
+
+	return entries, nil
 }
