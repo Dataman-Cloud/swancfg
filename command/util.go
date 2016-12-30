@@ -11,19 +11,20 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-func getClusters() ([]string, error) {
+func getClusters() (map[string]string, error) {
 	f, err := os.Open("cluster.cfg")
 	if err != nil {
 		return nil, err
 	}
 	defer f.Close()
 
-	clusters := make([]string, 0)
+	clusters := make(map[string]string, 0)
 
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
 		line := strings.Split(scanner.Text(), "\t\t")
-		clusters = append(clusters, line[1])
+		clusters[line[0]] = line[1]
+
 	}
 	if err := scanner.Err(); err != nil {
 		return nil, err
