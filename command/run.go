@@ -26,11 +26,11 @@ func NewRunCommand() cli.Command {
 		Usage: "run new application",
 		Flags: []cli.Flag{
 			cli.StringFlag{
-				Name:  "from-file",
+				Name:  "from-file, f",
 				Usage: "Run application from `FILE`",
 			},
 			cli.StringFlag{
-				Name:  "name",
+				Name:  "name, n",
 				Usage: "Set application name",
 			},
 			cli.IntFlag{
@@ -78,10 +78,11 @@ func runApplication(c *cli.Context) error {
 		}
 	}
 
-	fmt.Printf("===> sending request to cluster:%s...\n", spec.Cluster)
+	fmt.Printf("===> sending request to cluster:%s...", spec.Cluster)
 	if err := sendRequest(spec); err != nil {
 		return err
 	}
+	fmt.Println("done")
 
 	fmt.Printf("===> waiting for application to running...")
 	ticker := time.NewTicker(time.Duration(1 * time.Second))
