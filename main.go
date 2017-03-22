@@ -17,6 +17,7 @@ func main() {
 		command.NewQuotaCommand(),
 		command.NewRunCommand(),
 		command.NewListCommand(),
+		command.NewInspectCommand(),
 		command.NewDeleteCommand(),
 		command.NewClusterCommand(),
 	}

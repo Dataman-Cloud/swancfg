@@ -84,7 +84,7 @@ func runApplication(c *cli.Context) error {
 	}
 	fmt.Println("done")
 
-	fmt.Printf("===> waiting for application to running...")
+	fmt.Printf("===> waiting for application %s-%s-%s to running...", name, spec.RunAs, spec.Cluster)
 	ticker := time.NewTicker(time.Duration(1 * time.Second))
 	timeout := time.NewTicker(time.Duration(10 * time.Second))
 	for {

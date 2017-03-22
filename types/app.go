@@ -13,25 +13,14 @@ type App struct {
 	RunAs            string    `json:"runAs,omitempty"`
 	Priority         int       `json:"priority"`
 	ClusterId        string    `json:"clusterId,omitempty"`
-	Status           string    `json:"status,omitempty"`
 	Created          time.Time `json:"created,omitempty"`
 	Updated          time.Time `json:"updated,omitempty"`
 	Mode             string    `json:"mode,omitempty"`
 	State            string    `json:"state"`
 
 	// use task for compatability now, should be slot here
-	Tasks    []*Task  `json:"tasks,omitempty"`
-	Versions []string `json:"versions,omitempty"`
-	IP       []string `json:"ip,omitempty"`
-
-	// current version related info
-	Labels      map[string]string `json:"labels,omitempty"`
-	Env         map[string]string `json:"env,omitempty"`
-	Constraints []string          `json:"constraints,omitempty"`
-	Uris        []string          `json:"uris,omitempty"`
-	//HealthChecks      []*types.HealthCheck
-	//KillPolicy        *types.KillPolicy
-	//UpdatePolicy      *types.UpdatePolicy
+	Tasks          []*Task `json:"tasks,omitempty"`
+	CurrentVersion *Spec   `json:"currentVersion"`
 }
 
 // use task for compatability now, should be slot here
