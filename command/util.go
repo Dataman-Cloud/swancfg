@@ -22,8 +22,12 @@ func getClusters() (map[string]string, error) {
 
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
-		line := strings.Split(scanner.Text(), "\t\t")
-		clusters[line[0]] = line[1]
+		if scanner.Text() != "" {
+			line := strings.Split(scanner.Text(), "\t\t")
+			if len(line) == 2 {
+				clusters[line[0]] = line[1]
+			}
+		}
 
 	}
 	if err := scanner.Err(); err != nil {

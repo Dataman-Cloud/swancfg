@@ -1,0 +1,17 @@
+{
+"appName": "229",
+"cpus": 0.02,
+"mem": 32,
+"runAs": "nmg",
+"cluster": "nmgtest",
+"mode": "replicates",
+"instances": 1,
+"cmd": "top -d 10 -b",
+"env": {
+	"TERM": "linux"
+},
+"container": {
+"docker": {
+"network": "bridge",
+"image": "ubuntu:latest"
+}}}

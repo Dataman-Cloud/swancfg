@@ -15,10 +15,10 @@ func main() {
 
 	app.Commands = []cli.Command{
 		command.NewQuotaCommand(),
-		command.NewAddCommand(),
 		command.NewRunCommand(),
 		command.NewListCommand(),
 		command.NewDeleteCommand(),
+		command.NewClusterCommand(),
 	}
 
 	if err := app.Run(os.Args); err != nil {

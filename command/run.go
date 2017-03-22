@@ -33,6 +33,14 @@ func NewRunCommand() cli.Command {
 				Name:  "name",
 				Usage: "Set application name",
 			},
+			cli.IntFlag{
+				Name:  "times",
+				Usage: "Concurrent for testing",
+			},
+			cli.BoolTFlag{
+				Name:  "disable-quota",
+				Usage: "Disable quota check",
+			},
 		},
 		Action: func(c *cli.Context) error {
 			if err := runApplication(c); err != nil {
@@ -61,10 +69,13 @@ func runApplication(c *cli.Context) error {
 
 	name := c.String("name")
 	if name != "" {
-		spec.AppId = name
+		spec.AppName = name
 	}
-	if err := checkQuota(spec); err != nil {
-		return err
+
+	if !c.BoolT("disable-quota") {
+		if err := checkQuota(spec); err != nil {
+			return err
+		}
 	}
 
 	fmt.Printf("===> sending request to cluster:%s...\n", spec.Cluster)
@@ -79,7 +90,7 @@ func runApplication(c *cli.Context) error {
 		select {
 		case <-ticker.C:
 			fmt.Printf(".")
-			status, err := getStatus(spec.AppId)
+			status, err := getStatus(fmt.Sprintf("%s-%s-%s", spec.AppName, spec.RunAs, spec.Cluster))
 			if err != nil {
 				return err
 			}
@@ -182,6 +193,17 @@ func getQuota(user, cluster string) (*types.Quota, error) {
 }
 
 func sendRequest(spec *types.Spec) error {
+	addr, err := getClusterAddr(spec.Cluster)
+	if err != nil {
+		return fmt.Errorf("Cluster can't be found. %s", err.Error())
+	}
+
+	if addr == "" {
+		return fmt.Errorf("Cluster address can't be found. %s", spec.Cluster)
+	}
+
+	clusterAddr = addr
+
 	payload, err := json.Marshal(&spec)
 	if err != nil {
 		return fmt.Errorf("Marsh failed: %s", err.Error())
@@ -212,7 +234,10 @@ func sendRequest(spec *types.Spec) error {
 }
 
 func getStatus(appId string) (string, error) {
-	resp, _ := http.Get(fmt.Sprintf("%s/apps/%s", "127.0.0.1:9999", appId))
+	resp, err := http.Get(fmt.Sprintf("%s/apps/%s", clusterAddr, appId))
+	if err != nil {
+		return "unknown", err
+	}
 	defer resp.Body.Close()
 	var app *types.App
 	if err := json.NewDecoder(resp.Body).Decode(&app); err != nil {

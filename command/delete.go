@@ -5,6 +5,7 @@ import (
 	"github.com/urfave/cli"
 	"net/http"
 	"os"
+	"strings"
 )
 
 // NewDeleteCommand returns the CLI command for "delete"
@@ -22,6 +23,10 @@ func NewDeleteCommand() cli.Command {
 				Name:  "cluster",
 				Usage: "Delete apps belong to cluster [CLUSTER]",
 			},
+			cli.BoolFlag{
+				Name:  "all",
+				Usage: "Delete all apps",
+			},
 		},
 		Action: func(c *cli.Context) error {
 			if err := deleteApp(c); err != nil {
@@ -34,6 +39,10 @@ func NewDeleteCommand() cli.Command {
 
 // deleteApplication executes the "delete" command.
 func deleteApp(c *cli.Context) error {
+	if c.Bool("all") {
+		return deleteAll(c)
+	}
+
 	if len(c.Args()) == 0 {
 		return fmt.Errorf("name required")
 	}
@@ -60,4 +69,21 @@ func deleteApp(c *cli.Context) error {
 	_, err = client.Do(req)
 
 	return err
+}
+
+func deleteAll(c *cli.Context) error {
+	apps, _ := getAllApps("")
+
+	for _, app := range apps {
+		client := &http.Client{}
+		cluster := strings.Split(app.ID, "-")[2]
+		clusterAddr, _ := getCluster(cluster)
+		req, _ := http.NewRequest("DELETE", fmt.Sprintf("%s/apps/%s", clusterAddr, app.ID), nil)
+		fmt.Printf("Deleting %s\t", app.ID)
+		client.Do(req)
+		fmt.Printf("done\n")
+
+	}
+
+	return nil
 }

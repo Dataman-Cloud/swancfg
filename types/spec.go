@@ -1,8 +1,8 @@
 package types
 
 type Spec struct {
-	AppId        string
-	Command      string
+	AppName      string
+	Command      string `json:"cmd"`
 	Cpus         float64
 	Mem          float64
 	Disk         float64
@@ -16,7 +16,7 @@ type Spec struct {
 	Env          map[string]string
 	KillPolicy   *KillPolicy
 	UpdatePolicy *UpdatePolicy
-	Constraints  []string
+	Constraints  string
 	Uris         []string
 	Ip           []string
 	Mode         string

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/Dataman-Cloud/swancfg/types"
 	"github.com/olekukonko/tablewriter"
@@ -78,7 +79,11 @@ func getAllApps(filter string) ([]*types.App, error) {
 
 	var allApps []*types.App
 	for _, cluster := range clusters {
-		resp, _ := http.Get(fmt.Sprintf("%s/apps/?fields=%s", cluster, filter))
+		resp, err := http.Get(fmt.Sprintf("%s/apps/?fields=%s", cluster, filter))
+		if err != nil {
+			fmt.Errorf("%s", err.Error)
+			continue
+		}
 		defer resp.Body.Close()
 		var apps []*types.App
 		if err := json.NewDecoder(resp.Body).Decode(&apps); err != nil {
@@ -149,7 +154,7 @@ func printTable(apps []*types.App) {
 			app.Name,
 			fmt.Sprintf("%d", app.Instances),
 			app.RunAs,
-			app.ClusterId,
+			strings.Split(app.ID, "-")[2],
 			app.State,
 			app.Created.Format("2006-01-02 15:04:05"),
 			app.Updated.Format("2006-01-02 15:04:05"),
