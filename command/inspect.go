@@ -12,7 +12,13 @@ import (
 )
 
 var stateMap = map[string]string{
-	"slot_task_running": "running",
+	"slot_task_running":       "running",
+	"slot_task_pending_offer": "pending",
+}
+
+var healthyMap = map[bool]string{
+	true:  "true",
+	false: "false",
 }
 
 // NewInspectCommand returns the CLI command for "show"
@@ -47,7 +53,16 @@ func inspectApplication(c *cli.Context) error {
 		return fmt.Errorf("App ID required")
 	}
 
-	resp, err := http.Get(fmt.Sprintf("http://192.168.1.101:9994/v_beta/apps/%s", c.Args()[0]))
+	swanAddr, err := getRemote("swan")
+	if err != nil {
+		return err
+	}
+
+	if swanAddr == "" {
+		return fmt.Errorf("swan address not found")
+	}
+
+	resp, err := http.Get(fmt.Sprintf("%s/apps/%s", swanAddr, c.Args()[0]))
 	if err != nil {
 		return fmt.Errorf("Unable to do request: %s", err.Error())
 	}
@@ -81,26 +96,26 @@ func printTaskTable(tasks []*types.Task) {
 	tb := tablewriter.NewWriter(os.Stdout)
 	tb.SetHeader([]string{
 		"Name",
-		"APPID",
 		"CPUS",
 		"MEM",
 		"DISK",
-		"ADDRESS",
+		"IMAGE",
 		"STATUS",
 		"VERSIONID",
 		"HISTORIES",
+		"HEALTHY",
 	})
 	for _, task := range tasks {
 		tb.Append([]string{
 			task.ID,
-			task.AppID,
 			fmt.Sprintf("%.2f", task.CPU),
 			fmt.Sprintf("%.f", task.Mem),
 			fmt.Sprintf("%.f", task.Disk),
-			task.AgentHostname,
+			task.Image,
 			stateMap[task.Status],
 			task.VersionID,
 			fmt.Sprintf("%d", len(task.History)),
+			healthyMap[task.Healthy],
 		})
 	}
 	tb.Render()

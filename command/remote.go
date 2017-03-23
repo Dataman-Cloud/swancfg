@@ -24,7 +24,7 @@ func NewRemoteCommand() cli.Command {
 			},
 			cli.Command{
 				Name:      "add",
-				Usage:     "add cluster",
+				Usage:     "add remote",
 				ArgsUsage: "[swan|mesos] [address]",
 				Action: func(c *cli.Context) {
 					if err := addRemote(c); err != nil {
