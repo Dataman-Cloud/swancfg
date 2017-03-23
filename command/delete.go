@@ -5,7 +5,6 @@ import (
 	"github.com/urfave/cli"
 	"net/http"
 	"os"
-	"strings"
 )
 
 // NewDeleteCommand returns the CLI command for "delete"
@@ -51,17 +50,17 @@ func deleteApp(c *cli.Context) error {
 		return fmt.Errorf("cluster required")
 	}
 
-	cluster, err := getCluster(c.String("cluster"))
+	swan, err := getRemote("swan")
 	if err != nil {
 		return err
 	}
 
-	if cluster == "" {
-		return fmt.Errorf("cluster not found")
+	if swan == "" {
+		return fmt.Errorf("swan address not found")
 	}
 
 	client := &http.Client{}
-	req, err := http.NewRequest("DELETE", fmt.Sprintf("%s/apps/%s", cluster, c.Args()[0]), nil)
+	req, err := http.NewRequest("DELETE", fmt.Sprintf("%s/apps/%s", swan, c.Args()[0]), nil)
 	if err != nil {
 		return fmt.Errorf("Make new request failed: %s", err.Error())
 	}
@@ -76,9 +75,8 @@ func deleteAll(c *cli.Context) error {
 
 	for _, app := range apps {
 		client := &http.Client{}
-		cluster := strings.Split(app.ID, "-")[2]
-		clusterAddr, _ := getCluster(cluster)
-		req, _ := http.NewRequest("DELETE", fmt.Sprintf("%s/apps/%s", clusterAddr, app.ID), nil)
+		swanAddr, _ := getRemote("swan")
+		req, _ := http.NewRequest("DELETE", fmt.Sprintf("%s/apps/%s", swanAddr, app.ID), nil)
 		fmt.Printf("Deleting %s\t", app.ID)
 		client.Do(req)
 		fmt.Printf("done\n")

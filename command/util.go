@@ -1,61 +1,57 @@
 package command
 
 import (
-	"bufio"
 	"fmt"
 	"io/ioutil"
-	"os"
-	"strings"
 
 	"github.com/Dataman-Cloud/swancfg/types"
 	"gopkg.in/yaml.v2"
 )
 
-func getClusters() (map[string]string, error) {
-	f, err := os.Open("cluster.cfg")
+func getRemotes() (map[string]string, error) {
+	db, err := NewBoltStore(".bolt.db")
+	if err != nil {
+		return nil, fmt.Errorf("Init store engine failed:%s", err)
+	}
+
+	tx, err := db.conn.Begin(true)
 	if err != nil {
 		return nil, err
 	}
-	defer f.Close()
+	defer tx.Rollback()
 
-	clusters := make(map[string]string, 0)
+	bucket := tx.Bucket([]byte("swan"))
 
-	scanner := bufio.NewScanner(f)
-	for scanner.Scan() {
-		if scanner.Text() != "" {
-			line := strings.Split(scanner.Text(), "\t\t")
-			if len(line) == 2 {
-				clusters[line[0]] = line[1]
-			}
-		}
+	c := bucket.Cursor()
 
-	}
-	if err := scanner.Err(); err != nil {
-		return nil, err
+	remotes := make(map[string]string)
+	for k, v := c.First(); k != nil; k, v = c.Next() {
+		remotes[string(k)] = string(v)
 	}
 
-	return clusters, nil
+	return remotes, nil
 }
 
-func getCluster(cluster string) (string, error) {
-	f, err := os.Open("cluster.cfg")
+func getRemote(remote string) (string, error) {
+	db, err := NewBoltStore(".bolt.db")
+	if err != nil {
+		return "", fmt.Errorf("Init store engine failed:%s", err)
+	}
+
+	tx, err := db.conn.Begin(false)
 	if err != nil {
 		return "", err
 	}
-	defer f.Close()
+	defer tx.Rollback()
 
-	scanner := bufio.NewScanner(f)
-	for scanner.Scan() {
-		line := strings.Split(scanner.Text(), "\t\t")
-		if line[0] == cluster {
-			return line[1], nil
-		}
-	}
-	if err := scanner.Err(); err != nil {
-		return "", err
+	bucket := tx.Bucket([]byte("swan"))
+	val := bucket.Get([]byte(remote))
+
+	if val == nil {
+		return "", nil
 	}
 
-	return "", nil
+	return string(val[:]), nil
 }
 
 type Quota map[string]map[string]*types.Quota

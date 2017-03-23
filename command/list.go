@@ -72,41 +72,38 @@ func listApps(c *cli.Context) error {
 }
 
 func getAllApps(filter string) ([]*types.App, error) {
-	clusters, err := getClusters()
+	swanAddr, err := getRemote("swan")
 	if err != nil {
 		return nil, err
 	}
 
 	var allApps []*types.App
-	for _, cluster := range clusters {
-		resp, err := http.Get(fmt.Sprintf("%s/apps/?fields=%s", cluster, filter))
-		if err != nil {
-			fmt.Errorf("%s", err.Error)
-			continue
-		}
-		defer resp.Body.Close()
-		var apps []*types.App
-		if err := json.NewDecoder(resp.Body).Decode(&apps); err != nil {
-			continue
-		}
-
-		allApps = append(allApps, apps...)
+	resp, err := http.Get(fmt.Sprintf("%s/apps/?fields=%s", swanAddr, filter))
+	if err != nil {
+		return nil, fmt.Errorf("%s", err.Error())
 	}
+	defer resp.Body.Close()
+	var apps []*types.App
+	if err := json.NewDecoder(resp.Body).Decode(&apps); err != nil {
+		return nil, fmt.Errorf("%s", err.Error())
+	}
+
+	allApps = append(allApps, apps...)
 
 	return allApps, nil
 }
 
 func getAppsByClusterID(clusterId string) ([]*types.App, error) {
-	cluster, err := getCluster(clusterId)
+	swanAddr, err := getRemote("swan")
 	if err != nil {
 		return nil, err
 	}
 
-	if cluster == "" {
-		return nil, fmt.Errorf("cluster not found")
+	if swanAddr == "" {
+		return nil, fmt.Errorf("swan address not found")
 	}
 
-	resp, _ := http.Get(fmt.Sprintf("%s/apps/", cluster))
+	resp, _ := http.Get(fmt.Sprintf("%s/apps/", swanAddr))
 	defer resp.Body.Close()
 	var apps []*types.App
 	if err := json.NewDecoder(resp.Body).Decode(&apps); err != nil {

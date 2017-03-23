@@ -14,12 +14,12 @@ func main() {
 	app.Version = "0.1"
 
 	app.Commands = []cli.Command{
+		command.NewRemoteCommand(),
 		command.NewQuotaCommand(),
 		command.NewRunCommand(),
 		command.NewListCommand(),
 		command.NewInspectCommand(),
 		command.NewDeleteCommand(),
-		command.NewClusterCommand(),
 	}
 
 	if err := app.Run(os.Args); err != nil {
