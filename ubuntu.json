@@ -6,6 +6,7 @@
 "cluster": "nmgtest",
 "mode": "replicates",
 "instances": 1,
+"constraints": "like hostname ssd",
 "cmd": "top -d 10 -b",
 "env": {
 	"TERM": "linux"

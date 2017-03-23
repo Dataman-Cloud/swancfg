@@ -44,7 +44,7 @@ func NewRunCommand() cli.Command {
 		},
 		Action: func(c *cli.Context) error {
 			if err := runApplication(c); err != nil {
-				fmt.Fprintln(os.Stderr, "Error:", err)
+				fmt.Fprintln(os.Stderr, err)
 			}
 			return nil
 		},
@@ -80,6 +80,7 @@ func runApplication(c *cli.Context) error {
 
 	fmt.Printf("===> sending request to cluster:%s...", spec.Cluster)
 	if err := sendRequest(spec); err != nil {
+		fmt.Println("done")
 		return err
 	}
 	fmt.Println("done")
@@ -228,7 +229,11 @@ func sendRequest(spec *types.Spec) error {
 	}
 
 	if resp.StatusCode != http.StatusCreated {
-		return fmt.Errorf("Send request ok but status code not 201")
+		data, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+		return fmt.Errorf("%d %s", resp.StatusCode, string(data))
 	}
 
 	return nil
